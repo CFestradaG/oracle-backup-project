@@ -1,0 +1,20 @@
+# Logs generados en tiempo de ejecucion
+*.log
+
+# Archivos de wallet (claves privadas - NUNCA subir)
+*.p12
+*.sso
+wallet/
+
+# Backups Oracle generados
+*.bkp
+
+# Docker override local
+docker-compose.override.yml
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+desktop.ini

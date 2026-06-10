@@ -1,0 +1,40 @@
+# =============================================================================
+# Script RMAN: rman_backup.rman
+# Descripcion: Backup completo cifrado de Oracle XE (CDB + PDB XEPDB1)
+# Caracteristicas: AES128, Compresion MEDIUM, Retencion 7 dias
+# Llamado por: /opt/oracle/backup/scripts/run_backup.sh
+# =============================================================================
+
+# ============================================================
+# FASE 1: BACKUP PRINCIPAL
+# Cifrado AES128 activado via CONFIGURE ENCRYPTION (script 03)
+# TDE Wallet abierto automaticamente (cwallet.sso auto-login)
+# ============================================================
+RUN {
+    ALLOCATE CHANNEL ch1 DEVICE TYPE DISK
+        FORMAT '/opt/oracle/fra/%d_%T_%s_%p.bkp'
+        MAXPIECESIZE 2G;
+
+    # Backup completo CDB + PDBs con compresion MEDIUM
+    # INCLUDE CURRENT CONTROLFILE: garantiza recuperabilidad total
+    # PLUS ARCHIVELOG DELETE INPUT: respalda y limpia archive logs
+    BACKUP AS COMPRESSED BACKUPSET
+        DATABASE INCLUDE CURRENT CONTROLFILE
+        PLUS ARCHIVELOG DELETE INPUT;
+
+    RELEASE CHANNEL ch1;
+}
+
+# ============================================================
+# FASE 2: MANTENIMIENTO - Crosscheck y limpieza automatica
+# ============================================================
+CROSSCHECK BACKUP;
+CROSSCHECK ARCHIVELOG ALL;
+DELETE NOPROMPT EXPIRED BACKUP;
+DELETE NOPROMPT EXPIRED ARCHIVELOG ALL;
+DELETE NOPROMPT OBSOLETE;
+
+# ============================================================
+# FASE 3: REPORTE FINAL
+# ============================================================
+LIST BACKUP SUMMARY;

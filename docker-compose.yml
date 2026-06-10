@@ -1,0 +1,62 @@
+# =============================================================================
+# docker-compose.yml - Sistema Integral de Backups Oracle XE
+# Proyecto Final - Base de Datos II - UMG
+# =============================================================================
+#
+# USO:
+#   Levantar:   docker compose up -d
+#   Detener:    docker compose down
+#   Ver logs:   docker compose logs -f
+#   Conectar:   docker exec -it oracle-backup sqlplus / as sysdba
+# =============================================================================
+
+services:
+  oracle-backup:
+    # Usar imagen local (construida con Dockerfile) o la de Docker Hub
+    image: cestrda/oracle-backup-xe:latest
+    # Para construir localmente descomentar las siguientes 2 líneas y comentar "image":
+    # build:
+    #   context: .
+    container_name: oracle-backup
+    hostname: oracle-db
+
+    environment:
+      # Contraseña para los usuarios SYS, SYSTEM y PDBADMIN
+      ORACLE_PASSWORD: "Oracle123#"
+      ORACLE_CHARACTERSET: AL32UTF8
+
+    ports:
+      # Puerto del listener Oracle (conexiones SQL*Plus, JDBC, etc.)
+      - "1521:1521"
+      # Puerto de Oracle Enterprise Manager Express (interfaz web)
+      - "5500:5500"
+
+    volumes:
+      # Persistencia del Flash Recovery Area (backups RMAN y archive logs)
+      - oracle_fra:/opt/oracle/fra
+      # Persistencia de los logs de automatización
+      - oracle_backup_logs:/opt/oracle/backup/logs
+      # Persistencia del TDE Wallet (NUNCA eliminar este volumen)
+      - oracle_wallet:/opt/oracle/wallet
+
+    # El contenedor reinicia automáticamente (excepto si fue detenido manualmente)
+    restart: unless-stopped
+
+    # Verificación de salud: confirma que el listener está activo
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 3m
+
+# -----------------------------------------------------------------------------
+# Volúmenes nombrados (gestionados por Docker, persisten entre reinicios)
+# -----------------------------------------------------------------------------
+volumes:
+  oracle_fra:
+    name: oracle_fra
+  oracle_backup_logs:
+    name: oracle_backup_logs
+  oracle_wallet:
+    name: oracle_wallet
