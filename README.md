@@ -19,7 +19,11 @@ Imagen Docker con Oracle XE 21c configurada con ARCHIVELOG, TDE Wallet (AES128) 
 # Descargar y levantar el contenedor
 docker pull cestrda/oracle-backup-xe:latest
 # Despues de descartar levantar el contenedor
-docker run -d --name oracle-backup -p 1521:1521 -p 5500:5500 -e ORACLE_PWD=Oracle123# cestrda/oracle-backup-xe:latest
+docker run -d --name oracle-backup2 `
+  -p 1521:1521 -p 5500:5500 `
+  -e ORACLE_PASSWORD=Oracle123# `
+  cestrda/oracle-backup-xe:latest
+
 
 # Ver el progreso de inicialización (tarda ~5 minutos la primera vez)
 docker logs -f oracle-backup
